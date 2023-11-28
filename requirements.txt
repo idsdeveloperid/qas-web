@@ -1,7 +1,7 @@
-streamlit
-langchain
-python-dotenv
-chromadb
-pypdf
-openai
-tiktoken
+streamlit==1.26.0
+langchain==0.0.218
+python-dotenv==1.0.0
+chromadb==0.3.29
+pypdf==3.16.3
+openai==0.27.8
+tiktoken==0.4.0
