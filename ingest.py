@@ -4,50 +4,44 @@ from langchain.vectorstores.chroma import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import PyPDFDirectoryLoader
-import toml
+from dotenv import load_dotenv
 
-def load_config():
-    # Baca file toml
-    with open("openai_config.toml", "r") as file:
-        config_data = toml.load(file)
-    return config_data
+load_dotenv()
 
 def create_vector_db():
-    # Baca konfigurasi dari file toml
-    config_data = load_config()
-    
-    pdfs = PyPDFDirectoryLoader('./')
-    data = pdfs.load()
+  pdfs = PyPDFDirectoryLoader('./')
+  data = pdfs.load()
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=4000,
-        chunk_overlap=100
-    )
+  text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=4000,
+    chunk_overlap=100
+  )
 
-    texts = text_splitter.split_documents(data)
+  texts = text_splitter.split_documents(data)
+  # print(texts)
 
-    persist_directory = 'db'
-    if not os.path.exists(persist_directory):
-        os.mkdir(persist_directory)
+  persist_directory = 'db'
+  if not os.path.exists(persist_directory):
+    os.mkdir(persist_directory)
 
-    embeddings = OpenAIEmbeddings(
-        openai_api_key=config_data["api"]["openai_api_key"]
-    )
-    print(embeddings)
+  embeddings = OpenAIEmbeddings(
+    openai_api_key=os.getenv('OPENAI_API_KEY')
+  )
+  print(embeddings)
 
-    client_settings = chromadb.config.Settings(
-        chroma_db_impl="duckdb+parquet",
-        persist_directory=persist_directory,
-        anonymized_telemetry=False
-    )
+  client_settings = chromadb.config.Settings(
+    chroma_db_impl="duckdb+parquet",
+    persist_directory=persist_directory,
+    anonymized_telemetry=False
+  )
 
-    vectordb = Chroma.from_documents(
-        documents=texts,
-        embedding=embeddings,
-        collection_name='pdf_data',
-        client_settings=client_settings,
-        persist_directory=persist_directory
-    )
-    vectordb.persist()
+  vectordb = Chroma.from_documents(
+    documents=texts,
+    embedding=embeddings,
+    collection_name='pdf_data',
+    client_settings=client_settings,
+    persist_directory=persist_directory
+  )
+  vectordb.persist()
 
-    return vectordb
+  return vectordb
