@@ -2,11 +2,16 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts.prompt import PromptTemplate
+from ingest import load_config  # Add this import
 
 def get_conversation_chain(vector_store):
+  config_data = load_config()
+  openai_api_key = config_data["api"]["openai_api_key"]
+
   llm = ChatOpenAI(
     model="gpt-3.5-turbo",
-    temperature=0.7
+    temperature=0.7,
+    openai_api_key=openai_api_key 
   )
 
   prompt_template = """You are a helpful AI assistant. 

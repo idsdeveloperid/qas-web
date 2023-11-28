@@ -6,30 +6,35 @@ from langchain.vectorstores.chroma import Chroma
 from ingest import create_vector_db
 from chain import get_conversation_chain
 from chat_ui import message_display, reset_chat_history
+from ingest import load_config
 
 def load_chain():
-  collection_name = 'pdf_data'
-  dir_name = 'db'
+    collection_name = 'pdf_data'
+    dir_name = 'db'
 
-  if not os.path.exists(dir_name):
-    raise Exception(f"{dir_name} does not exist, nothing can be queried")
+    if not os.path.exists(dir_name):
+        raise Exception(f"{dir_name} does not exist, nothing can be queried")
 
-  client_settings = chromadb.config.Settings(
-    chroma_db_impl="duckdb+parquet",
-    persist_directory=dir_name,
-    anonymized_telemetry=False
-  )
+    client_settings = chromadb.config.Settings(
+        chroma_db_impl="duckdb+parquet",
+        persist_directory=dir_name,
+        anonymized_telemetry=False
+    )
 
-  embeddings = OpenAIEmbeddings()
+    # Baca konfigurasi dari file toml
+    config_data = load_config()
+    openai_api_key = config_data["api"]["openai_api_key"]
 
-  db = Chroma(
-    collection_name=collection_name,
-    embedding_function=embeddings,
-    client_settings=client_settings,
-    persist_directory=dir_name,
-  )
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
 
-  return get_conversation_chain(db)
+    db = Chroma(
+        collection_name=collection_name,
+        embedding_function=embeddings,
+        client_settings=client_settings,
+        persist_directory=dir_name,
+    )
+
+    return get_conversation_chain(db)
 
 chain = load_chain()
 
